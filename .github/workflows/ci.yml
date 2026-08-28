@@ -1,0 +1,25 @@
+name: C++ CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build solution
+        run: msbuild Calculator.sln /m /p:Configuration=Debug /p:Platform=x64
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          $vstest = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -find **\vstest.console.exe | Select-Object -First 1
+          & $vstest "x64\Debug\UnitTest_calculator.dll"
